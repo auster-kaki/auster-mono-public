@@ -1,0 +1,65 @@
+# Comments are provided throughout this file to help you get started.
+# If you need more help, visit the Docker Compose reference guide at
+# https://docs.docker.com/go/compose-spec-reference/
+
+# Here the instructions define your application as a service called "server".
+# This service is built from the Dockerfile in the current directory.
+# You can add other services your application may depend on here, such as a
+# database or a cache. For examples, see the Awesome Compose repository:
+# https://github.com/docker/awesome-compose
+services:
+  api:
+    build:
+      context: backend/go
+      target: final
+    environment:
+      MYSQL_HOST: db
+      DIARY_HOST: diary
+      DIARY_PORT: 80
+    volumes:
+      - image-data:/assets/images
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+      diary:
+        condition: service_started
+    develop:
+        watch:
+          - action: rebuild
+            path: backend/go
+            target: final
+  diary:
+      build:
+        context: backend/python
+      environment:
+        MYSQL_HOST: db
+      ports:
+        - "5050:80"
+      develop:
+        watch:
+          - action: sync
+            path: backend/python
+            target: /app
+  db:
+    image: mysql:8.0.40
+    restart: always
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+      MYSQL_DATABASE: "auster"
+      TZ: "Asia/Tokyo"
+    volumes:
+        - db-data:/var/lib/mysql
+        - ./schema/mysql/my.conf:/etc/mysql/my.cnf
+        - ./schema/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "3306:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+volumes:
+  db-data:
+  image-data:

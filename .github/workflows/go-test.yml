@@ -1,0 +1,28 @@
+name: Go Test
+
+on:
+  pull_request:
+    branches: [ '**' ]
+    paths:
+      - 'backend/go/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: './backend/go/go.mod'
+
+      - name: move to backend/go
+        run: cd backend/go
+
+      - name: Install dependencies
+        if: ${{ steps.setup-go.outputs.cache-hit != 'true' }}
+        run: cd backend/go && go mod download
+
+      - name: Test
+        run: cd backend/go && go test ./...

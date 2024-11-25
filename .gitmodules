@@ -1,0 +1,6 @@
+[submodule "backend/python/roop"]
+	path = backend/python/roop
+	url = https://github.com/s0md3v/roop.git
+[submodule "backend/python/roopapi"]
+	path = backend/python/roopapi
+	url = https://github.com/soniccan/roopapi.git
